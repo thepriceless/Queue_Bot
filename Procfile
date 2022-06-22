@@ -1,1 +1,1 @@
-bot: python Queue.py
+worker: python Queue.py
