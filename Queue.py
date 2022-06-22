@@ -1,7 +1,11 @@
+import os
+
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot('5574904687:AAGKD0mg6kaiRVC9AyOqTuLcOtT7-QB4Qcs')
+TOKEN = os.environ["TOKEN"]
+
+bot = telebot.TeleBot(TOKEN)
 
 
 queue = []
