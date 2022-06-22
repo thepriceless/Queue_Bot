@@ -3,7 +3,7 @@ import os
 import telebot
 from telebot import types
 
-TOKEN = os.environ["TOKEN"]
+TOKEN = os.environ["QM3100_TOKEN"]
 
 bot = telebot.TeleBot(TOKEN)
 
