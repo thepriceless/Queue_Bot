@@ -90,7 +90,7 @@ def RestartQueue():
 def SuggestUser(place):
     global queue, to_kick
     if (1 <= place) and (place <= len(queue)):
-        to_kick = place - 1
+        to_kick = place
         return queue[place - 1][0].split()[0]
     else:
         return ""
@@ -131,7 +131,6 @@ def SwapBehind(name, username):
 
 def KickUser(kick_num):
     global queue
-    kick_num = int(kick_num)
     kicked_chat_id = queue[kick_num - 1][1]
     kicked_name = queue[kick_num - 1][0].split()[0]
     queue.pop(kick_num - 1)
