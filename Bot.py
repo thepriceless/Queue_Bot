@@ -54,7 +54,7 @@ def CheckExistance(full_name):
 
 def CallFirst():
     if len(queue) > 0:
-        bot.send_message(queue[0][1], "It's your turn now!")
+        bot.send_message(queue[0][1], "<b>ATTENTION!</b>\nIt's your turn now!", parse_mode='html')
 
 
 def FormUser(full_name, chat_id):
@@ -87,7 +87,7 @@ def RestartQueue():
     RestartTumbler()
 
 
-def SuggestUser(place):
+def SuggestUserForKick(place):
     global queue, to_kick
     if (1 <= place) and (place <= len(queue)):
         to_kick = place
@@ -127,6 +127,15 @@ def SwapBehind(name, username):
     else:
         queue[place - 1], queue[place] = queue[place], queue[place - 1]
         return [place, True]
+
+
+def TrySkip(name, username, chat_id):
+    place_remove = RemoveUser(name, username)
+    if place_remove[1]:
+        place_add = AddUser(name, username, chat_id)
+        return [place_add[0], place_remove[0]]
+    else:
+        return [0, 0]
 
 
 def KickUser(kick_num):

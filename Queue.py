@@ -59,16 +59,13 @@ def Remove(message):
 
 @bot.message_handler(commands=['SkipAll'])
 def SkipAll(message):
-    place_remove = Bot.RemoveUser(message.from_user.first_name, message.from_user.username)
-    if place_remove[1]:
-        place_add = Bot.AddUser(message.from_user.first_name, message.from_user.username, message.chat.id)
-        bot.send_message(message.chat.id, f"You've skipped everyone and got into the end of the queue.\n"
-                                          f"<b>Now your place is {place_add[0]}</b>", parse_mode='html')
-        Bot.ShowUpdates(place_remove[0] - 1, Bot.GetLength())
-        if place_remove[0] == 1:
-            Bot.CallFirst()
-    else:
-        bot.send_message(message.chat.id, "Oops, you're not in the queue yet.\nUse /Add to stand in")
+
+    markup = Bot.types.InlineKeyboardMarkup(row_width=2)
+    item1 = Bot.types.InlineKeyboardButton("Skip!", callback_data='skipall')
+    item2 = Bot.types.InlineKeyboardButton("Don't skip", callback_data='dont skip')
+    markup.add(item1, item2)
+
+    bot.send_message(message.chat.id, "Do you really wanna skip everyone?", reply_markup=markup)
 
 
 @bot.message_handler(commands=['Swap'])
@@ -132,7 +129,7 @@ def Special(message):
 
     elif Bot.real_kick:
         kick_num = message.json['text']
-        kick_name = Bot.SuggestUser(int(kick_num))
+        kick_name = Bot.SuggestUserForKick(int(kick_num))
 
         if kick_name != "":
             markup = Bot.types.InlineKeyboardMarkup(row_width=2)
@@ -157,10 +154,31 @@ def callback_inline(call):
                 bot.send_message(kicked[0], "You've been kicked from the queue by the admin "
                                             "due to the bad behaviour.\nYOUR HISTORY IS FINISHED!")
                 bot.send_message(call.message.chat.id, f"{kicked[1]} has been kicked.")
+                bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                              reply_markup='')
 
             elif call.data == 'dont kick':
-                bot.send_message(call.message.chat.id, 'No one has been kicked')
-            # bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id-2, reply_markup=Bot.types.ReplyKeyboardRemove())
+                bot.send_message(call.message.chat.id, 'No problem, nothing changed')
+                bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup='')
+
+            if call.data == 'skipall':
+                print(call.message.chat.first_name, call.message.chat.username, call.message.chat.id)
+                place = Bot.TrySkip(call.message.chat.first_name, call.message.chat.username, call.message.chat.id)
+                print(place)
+                if place[0] != 0:
+                    bot.send_message(call.message.chat.id, f"You've skipped everyone and got into the end of the queue."
+                                                           f"\n<b>Now your place is {place[0]}</b>", parse_mode='html')
+                    Bot.ShowUpdates(place[1] - 1, min(3, Bot.GetLength()))
+                    if place[1] == 1:
+                        Bot.CallFirst()
+                else:
+                    bot.send_message(call.message.chat.id, "Oops, you're not in the queue yet.\nUse /Add to stand in")
+                bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                              reply_markup='')
+            elif call.data == 'dont skip':
+                bot.send_message(call.message.chat.id, "No problem, nothing changed")
+                bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                              reply_markup='')
 
     except:
         pass
