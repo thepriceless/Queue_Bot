@@ -23,7 +23,8 @@ def Help(message):
     bot.send_message(message.chat.id, "Here's a list of my commands:\n/Add - stand into the end of the queue\n"
                                       "/Remove - remove yourself from the queue\n/Show - show current queue\n"
                                       "/Swap - skip one person from behind to stay in front of you\n"
-                                      "/SkipAll - skip everyone and get to the end of the queue")
+                                      "/SkipAll - skip everyone and get to the end of the queue\n"
+                                      "\nControl🤪me")
 
 
 @bot.message_handler(commands=['Add'])
@@ -94,6 +95,7 @@ def RestartTry(message):
         bot.send_message(message.chat.id, "You need admin roots to do this action.\nPlease, enter the special code...")
     else:
         Bot.RestartQueue()
+        bot.send_message(message.chat.id, "The queue is successfully restarted")
 
 
 @bot.message_handler(commands=['Kick', 'kick'])
@@ -117,7 +119,7 @@ def Special(message):
             bot.send_message(message.chat.id, "The code is incorrect.\nIf you believe you're an admin, "
                                               "try the command again")
 
-    if Bot.kick_try:
+    elif Bot.kick_try:
         if message.text == str(Bot.CODE):
             bot.send_message(message.chat.id, "Ok\, enter the _position_ of the person you want to kick\.\.\.",
                              parse_mode='MarkdownV2')
@@ -129,26 +131,35 @@ def Special(message):
 
     elif Bot.real_kick:
         kick_num = message.json['text']
-        kick_name = Bot.SuggestUserForKick(int(kick_num))
-
-        if kick_name != "":
-            markup = Bot.types.InlineKeyboardMarkup(row_width=2)
-            item1 = Bot.types.InlineKeyboardButton("Kick!", callback_data='kick')
-            item2 = Bot.types.InlineKeyboardButton("Don't kick", callback_data='dont kick')
-            markup.add(item1, item2)
-
-            bot.send_message(message.chat.id, f"Do you really want to kick {kick_name} from the "
-                                              f"{kick_num}th position?", reply_markup=markup)
+        if not kick_num.isdigit():
+            bot.send_message(message.chat.id, "The number is expected, not letters or spaces")
         else:
-            bot.send_message(message.chat.id, f"There's nobody with number {kick_num} in the queue.\n"
-                                              f"No one has been kicked")
+            kick_name = Bot.SuggestUserForKick(int(kick_num))
+
+            if kick_name != "":
+                markup = Bot.types.InlineKeyboardMarkup(row_width=2)
+                item1 = Bot.types.InlineKeyboardButton("Kick!", callback_data='kick')
+                item2 = Bot.types.InlineKeyboardButton("Don't kick", callback_data='dont kick')
+                markup.add(item1, item2)
+
+                bot.send_message(message.chat.id, f"Do you really want to kick {kick_name} from the "
+                                                  f"{kick_num}th position?", reply_markup=markup)
+            else:
+                bot.send_message(message.chat.id, f"There's nobody with number {kick_num} in the queue.\n"
+                                                  f"No one has been kicked")
         Bot.RealKickTumbler()
+
+    else:
+        bot.send_message(message.chat.id, "Sorry, I can't understand you. Please, use suggested commands.\n"
+                                          "Go /Help to see the full list of commands")
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     try:
         if call.message:
+
+            # kick or not
             if call.data == 'kick':
                 kicked = Bot.KickUser(Bot.to_kick)
                 bot.send_message(kicked[0], "You've been kicked from the queue by the admin "
@@ -159,8 +170,10 @@ def callback_inline(call):
 
             elif call.data == 'dont kick':
                 bot.send_message(call.message.chat.id, 'No problem, nothing changed')
-                bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup='')
+                bot.edit_message_reply_markup(chat_id=call.message.chat.id,message_id=call.message.message_id,
+                                              reply_markup='')
 
+            # skip or not
             if call.data == 'skipall':
                 print(call.message.chat.first_name, call.message.chat.username, call.message.chat.id)
                 place = Bot.TrySkip(call.message.chat.first_name, call.message.chat.username, call.message.chat.id)
@@ -179,7 +192,6 @@ def callback_inline(call):
                 bot.send_message(call.message.chat.id, "No problem, nothing changed")
                 bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                               reply_markup='')
-
     except:
         pass
 
