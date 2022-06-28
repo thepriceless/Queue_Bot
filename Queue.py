@@ -2,32 +2,32 @@ from Bot import bot
 import Bot
 
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['Start', 'start'])
 def Start(message):
     markup = Bot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = Bot.types.KeyboardButton("/Add")
-    item2 = Bot.types.KeyboardButton("/Remove")
-    item3 = Bot.types.KeyboardButton("/Show")
-    item4 = Bot.types.KeyboardButton("/Swap")
-    item5 = Bot.types.KeyboardButton("/SkipAll")
-    item6 = Bot.types.KeyboardButton("/Help")
+    item1 = Bot.types.KeyboardButton("Get in")
+    item2 = Bot.types.KeyboardButton("Get out")
+    item3 = Bot.types.KeyboardButton("Show queue")
+    item4 = Bot.types.KeyboardButton("Skip one person")
+    item5 = Bot.types.KeyboardButton("Go back")
+    item6 = Bot.types.KeyboardButton("Help")
 
     markup.add(item1, item2, item3, item4, item5, item6)
 
-    bot.send_message(message.chat.id, "Hi 🥰, I'm the bot, who tracks the queue in M3100!\n"
-                                      "Use /Help to see the commands' description", reply_markup=markup)
+    bot.send_message(message.chat.id, "Hi 🥰, I'm the bot, who tracks the queue in M3100!\n", reply_markup=markup)
+    Help(message)
 
 
-@bot.message_handler(commands=['Help'])
+@bot.message_handler(commands=['Help', 'help'])
 def Help(message):
-    bot.send_message(message.chat.id, "Here's a list of my commands:\n/Add - stand into the end of the queue\n"
-                                      "/Remove - remove yourself from the queue\n/Show - show current queue\n"
-                                      "/Swap - skip one person from behind to stay in front of you\n"
-                                      "/SkipAll - skip everyone and get to the end of the queue\n"
+    bot.send_message(message.chat.id, "Here's a list of my commands:\n/add - stand into the end of the queue\n"
+                                      "/remove - remove yourself from the queue\n/show - show current queue\n"
+                                      "/swap - skip one person from behind to stay in front of you\n"
+                                      "/skipAll - skip everyone and get to the end of the queue\n"
                                       "\nControl🤪me")
 
 
-@bot.message_handler(commands=['Add'])
+@bot.message_handler(commands=['Add', 'add'])
 def Add(message):
     place = Bot.AddUser(message.from_user.first_name, message.from_user.username, message.chat.id)
     if place[1]:
@@ -36,17 +36,17 @@ def Add(message):
     else:
         bot.send_message(message.chat.id, f"Oops, you're already in queue.\n"
                                           f"<b>Your place is {place[0]}</b>\n"
-                                          f"Use /SkipAll to get to the end of the queue\n"
-                                          f"Use /Swap to to swap with the person behind", parse_mode='html')
+                                          f"Use /skipAll to get to the end of the queue\n"
+                                          f"Use /swap to to swap with the person behind", parse_mode='html')
     Show(message)
 
 
-@bot.message_handler(commands=['Show'])
+@bot.message_handler(commands=['Show', 'show'])
 def Show(message):
     bot.send_message(message.chat.id, Bot.FormList(), parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 
-@bot.message_handler(commands=['Remove'])
+@bot.message_handler(commands=['Remove', 'remove'])
 def Remove(message):
     place = Bot.RemoveUser(message.from_user.first_name, message.from_user.username)
     if place[1]:
@@ -58,7 +58,7 @@ def Remove(message):
         bot.send_message(message.chat.id, "Oops, you're already not in the queue")
 
 
-@bot.message_handler(commands=['SkipAll'])
+@bot.message_handler(commands=['SkipAll', 'skipall'])
 def SkipAll(message):
 
     markup = Bot.types.InlineKeyboardMarkup(row_width=2)
@@ -69,7 +69,7 @@ def SkipAll(message):
     bot.send_message(message.chat.id, "Do you really wanna skip everyone?", reply_markup=markup)
 
 
-@bot.message_handler(commands=['Swap'])
+@bot.message_handler(commands=['Swap', 'swap'])
 def Swap(message):
     place = Bot.SwapBehind(message.from_user.first_name, message.from_user.username)
     if place[1]:
@@ -150,7 +150,20 @@ def Special(message):
         Bot.RealKickTumbler()
 
     else:
-        bot.send_message(message.chat.id, "Sorry, I can't understand you. Please, use suggested commands.\n"
+        if (message.text.lower() == "get in") or (message.text.lower() == "встать в очередь"):
+            Add(message)
+        elif (message.text.lower() == "show queue") or (message.text.lower() == "показать очередь"):
+            Remove(message)
+        elif (message.text.lower() == "get out") or (message.text.lower() == "выйти из очереди"):
+            Remove(message)
+        elif (message.text.lower() == "skip one person") or (message.text.lower() == "пропустить одного человека"):
+            Swap(message)
+        elif (message.text.lower() == "go back") or (message.text.lower() == "уйти в конец"):
+            SkipAll(message)
+        elif (message.text.lower() == "help") or (message.text.lower() == "помощь - я овощ"):
+            Help(message)
+        else:
+            bot.send_message(message.chat.id, "Sorry, I can't understand you. Please, use suggested commands.\n"
                                           "Go /Help to see the full list of commands")
 
 
@@ -175,9 +188,7 @@ def callback_inline(call):
 
             # skip or not
             if call.data == 'skipall':
-                print(call.message.chat.first_name, call.message.chat.username, call.message.chat.id)
                 place = Bot.TrySkip(call.message.chat.first_name, call.message.chat.username, call.message.chat.id)
-                print(place)
                 if place[0] != 0:
                     bot.send_message(call.message.chat.id, f"You've skipped everyone and got into the end of the queue."
                                                            f"\n<b>Now your place is {place[0]}</b>", parse_mode='html')

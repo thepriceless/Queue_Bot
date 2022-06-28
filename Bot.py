@@ -16,6 +16,8 @@ real_kick = False
 
 to_kick = 0
 
+# language
+English = True
 
 queue = []
 
