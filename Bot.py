@@ -17,7 +17,7 @@ real_kick = False
 to_kick = 0
 
 # language
-English = True
+English = None
 
 queue = []
 
@@ -46,6 +46,17 @@ def RealKickTumbler():
     global real_kick
     real_kick = not real_kick
 
+
+def LanguageTumbler(lang=""):
+    global English
+    if lang == "ENG":
+        English = True
+    elif lang == "RUS":
+        English = False
+    else:
+        English = not English
+
+
 # queue operators
 def CheckExistance(full_name):
     for i in range(len(queue)):
@@ -60,9 +71,7 @@ def CallFirst():
 
 
 def FormUser(full_name, chat_id):
-    user = []
-    user.append(full_name)
-    user.append(chat_id)
+    user = [full_name, chat_id]
     return user
 
 
