@@ -16,10 +16,23 @@ real_kick = False
 
 to_kick = 0
 
-# language
-English = True
-
 queue = []
+chat_to_language = {}
+
+
+def DefaultUserAdd(chat_id):
+    if GetUserLang(chat_id) is None:
+        UserLang(chat_id, True)
+
+
+def UserLang(chat_id, lang=None):
+    global chat_to_language
+    chat_to_language[str(chat_id)] = lang
+
+
+def GetUserLang(chat_id):
+    global chat_to_language
+    return chat_to_language.get(str(chat_id))
 
 
 def GetChatId(place):
@@ -46,6 +59,7 @@ def RealKickTumbler():
     global real_kick
     real_kick = not real_kick
 
+
 # queue operators
 def CheckExistance(full_name):
     for i in range(len(queue)):
@@ -56,31 +70,43 @@ def CheckExistance(full_name):
 
 def CallFirst():
     if len(queue) > 0:
-        bot.send_message(queue[0][1], "<b>ATTENTION!</b>\nIt's your turn now!", parse_mode='html')
+        if GetUserLang(queue[0][1]):
+            bot.send_message(queue[0][1], "<b>ATTENTION!</b>\nIt's your turn now!", parse_mode='html')
+        else:
+            bot.send_message(queue[0][1], "<b>ВНИМАНИЕ!</b>\nСейчас твоя очередь!", parse_mode='html')
 
 
 def FormUser(full_name, chat_id):
-    user = []
-    user.append(full_name)
-    user.append(chat_id)
+    user = [full_name, chat_id]
     return user
 
 
-def FormList():
-    string = "Queue:\n"
+def FormList(english):
+    if english:
+        string = "Queue:\n"
+    else:
+        string = "Очередь:\n"
     if len(queue) > 0:
         for i in range(len(queue)):
             string += str(i + 1) + "\. [" + queue[i][0].split()[0] + '](' + queue[i][0].split()[1] + ')\n'
     else:
-        string = "Queue is empty"
+        if english:
+            string = "Queue is empty"
+        else:
+            string = "Очередь пуста"
     return string
 
 
 def ShowUpdates(start_pos, end_pos):
-    string = FormList()
+    string_eng = FormList(True)
+    string_rus = FormList(False)
     for i in range(start_pos, end_pos):
-        bot.send_message(queue[i][1], "The queue has been changed\!\n" + string,
-                         parse_mode='MarkdownV2', disable_web_page_preview=True)
+        if GetUserLang(queue[i][1]):
+            bot.send_message(queue[i][1], "The queue has been changed\!\n" + string_eng,
+                             parse_mode='MarkdownV2', disable_web_page_preview=True)
+        else:
+            bot.send_message(queue[i][1], "Очередь изменилась\!\n" + string_rus,
+                             parse_mode='MarkdownV2', disable_web_page_preview=True)
 
 
 def RestartQueue():
