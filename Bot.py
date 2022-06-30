@@ -20,12 +20,13 @@ queue = []
 chat_to_language = {}
 
 
-def DefaultUserAdd(chat_id):
+def IfExists(chat_id):
     if GetUserLang(chat_id) is None:
-        UserLang(chat_id, True)
+        return False
+    return True
 
 
-def UserLang(chat_id, lang=None):
+def SetUserLang(chat_id, lang=None):
     global chat_to_language
     chat_to_language[str(chat_id)] = lang
 

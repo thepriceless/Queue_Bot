@@ -4,16 +4,16 @@ import Bot
 
 def Send_Message(chat, text_eng, text_rus, parsemode=None):  # shell for bot.send_message() because of multilingual
     english = Bot.GetUserLang(chat)
-    if english:
-        if parsemode is None:
-            bot.send_message(chat, text_eng)
-        else:
-            bot.send_message(chat, text_eng, parse_mode=parsemode, disable_web_page_preview=True)
-    else:
+    if english is False:
         if parsemode is None:
             bot.send_message(chat, text_rus)
         else:
             bot.send_message(chat, text_rus, parse_mode=parsemode, disable_web_page_preview=True)
+    else:
+        if parsemode is None:
+            bot.send_message(chat, text_eng)
+        else:
+            bot.send_message(chat, text_eng, parse_mode=parsemode, disable_web_page_preview=True)
 
 
 # buttons[0] are english, buttons[1] are russian; callbacks are the same
@@ -23,47 +23,7 @@ def Send_Buttoned_Message(chat, text_eng, text_rus, buttons, callbacks=None, par
         callbacks = []
 
     english = Bot.GetUserLang(chat)
-    if english:
-        if callbacks:
-            inline_markup_eng = Bot.types.InlineKeyboardMarkup(row_width=2)
-            left_eng = Bot.types.InlineKeyboardButton(buttons[0][0], callback_data=callbacks[0])
-            right_eng = Bot.types.InlineKeyboardButton(buttons[0][1], callback_data=callbacks[1])
-            inline_markup_eng.add(left_eng, right_eng)
-            if parsemode is None:
-                bot.send_message(chat, text_eng, reply_markup=inline_markup_eng)
-            else:
-                bot.send_message(chat, text_eng, reply_markup=inline_markup_eng, parse_mode=parsemode)
-        else:
-            reply_keyboard_markup_eng = Bot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-            # probably can be done better
-            if len(buttons[0]) == 6:
-                button1 = Bot.types.KeyboardButton(buttons[0][0])
-                button2 = Bot.types.KeyboardButton(buttons[0][1])
-                button3 = Bot.types.KeyboardButton(buttons[0][2])
-                button4 = Bot.types.KeyboardButton(buttons[0][3])
-                button5 = Bot.types.KeyboardButton(buttons[0][4])
-                button6 = Bot.types.KeyboardButton(buttons[0][5])
-                reply_keyboard_markup_eng.add(button1, button2, button3, button4, button5, button6)
-
-            elif len(buttons[0]) == 4:
-                button1 = Bot.types.KeyboardButton(buttons[0][0])
-                button2 = Bot.types.KeyboardButton(buttons[0][1])
-                button3 = Bot.types.KeyboardButton(buttons[0][2])
-                button4 = Bot.types.KeyboardButton(buttons[0][3])
-                reply_keyboard_markup_eng.add(button1, button2, button3, button4)
-
-            elif len(buttons[0]) == 2:
-                button1 = Bot.types.KeyboardButton(buttons[0][0])
-                button2 = Bot.types.KeyboardButton(buttons[0][1])
-                reply_keyboard_markup_eng.add(button1, button2)
-
-            if parsemode is None:
-                bot.send_message(chat, text_eng, reply_markup=reply_keyboard_markup_eng)
-            else:
-                bot.send_message(chat, text_eng, reply_markup=reply_keyboard_markup_eng, parse_mode=parsemode)
-
-    else:  # russian invariant
+    if english is False:  # russian invariant
         if callbacks:
             inline_markup_rus = Bot.types.InlineKeyboardMarkup(row_width=2)
             left_rus = Bot.types.InlineKeyboardButton(buttons[1][0], callback_data=callbacks[0])
@@ -103,11 +63,51 @@ def Send_Buttoned_Message(chat, text_eng, text_rus, buttons, callbacks=None, par
             else:
                 bot.send_message(chat, text_rus, reply_markup=reply_keyboard_markup_rus, parse_mode=parsemode)
 
+    else:  # english invariant
+        if callbacks:
+            inline_markup_eng = Bot.types.InlineKeyboardMarkup(row_width=2)
+            left_eng = Bot.types.InlineKeyboardButton(buttons[0][0], callback_data=callbacks[0])
+            right_eng = Bot.types.InlineKeyboardButton(buttons[0][1], callback_data=callbacks[1])
+            inline_markup_eng.add(left_eng, right_eng)
+            if parsemode is None:
+                bot.send_message(chat, text_eng, reply_markup=inline_markup_eng)
+            else:
+                bot.send_message(chat, text_eng, reply_markup=inline_markup_eng, parse_mode=parsemode)
+        else:
+            reply_keyboard_markup_eng = Bot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+            # probably can be done better
+            if len(buttons[0]) == 6:
+                button1 = Bot.types.KeyboardButton(buttons[0][0])
+                button2 = Bot.types.KeyboardButton(buttons[0][1])
+                button3 = Bot.types.KeyboardButton(buttons[0][2])
+                button4 = Bot.types.KeyboardButton(buttons[0][3])
+                button5 = Bot.types.KeyboardButton(buttons[0][4])
+                button6 = Bot.types.KeyboardButton(buttons[0][5])
+                reply_keyboard_markup_eng.add(button1, button2, button3, button4, button5, button6)
+
+            elif len(buttons[0]) == 4:
+                button1 = Bot.types.KeyboardButton(buttons[0][0])
+                button2 = Bot.types.KeyboardButton(buttons[0][1])
+                button3 = Bot.types.KeyboardButton(buttons[0][2])
+                button4 = Bot.types.KeyboardButton(buttons[0][3])
+                reply_keyboard_markup_eng.add(button1, button2, button3, button4)
+
+            elif len(buttons[0]) == 2:
+                button1 = Bot.types.KeyboardButton(buttons[0][0])
+                button2 = Bot.types.KeyboardButton(buttons[0][1])
+                reply_keyboard_markup_eng.add(button1, button2)
+
+            if parsemode is None:
+                bot.send_message(chat, text_eng, reply_markup=reply_keyboard_markup_eng)
+            else:
+                bot.send_message(chat, text_eng, reply_markup=reply_keyboard_markup_eng, parse_mode=parsemode)
+
 
 @bot.message_handler(commands=['Start', 'start', 'Lang', 'lang', 'Switch', 'switch'])
 def Start(message):
-    if Bot.GetUserLang(message.chat.id) is None:  # if language is not chosen yet (real start)
-        Bot.UserLang(message.chat.id)
+    if not Bot.IfExists(message.chat.id):  # if language is not chosen yet (real start)
+        Bot.SetUserLang(message.chat.id, True)
 
         language_markup = Bot.types.InlineKeyboardMarkup(row_width=2)
         ENG = Bot.types.InlineKeyboardButton("🇬🇧 ENG 🇬🇧", callback_data='ENG')
@@ -115,34 +115,36 @@ def Start(message):
         language_markup.add(ENG, RUS)
 
         bot.send_message(message.chat.id, "🇬🇧 Hi 🥰! I'm the bot, who tracks the queue!\n"
-                                          "First of all, choose the language you want to use...\n"
-                                          "I will type you using chosen language\n\n"
+                                          "First of all, choose the language you want to use (🇬🇧 by default)\n"
+                                          "I will type you using chosen language\n"
+                                          "If you see this message not the first time, probably, I've been updated! 🖥\n"
+                                          "If you want to switch 🇬🇧 to 🇷🇺, use /lang\n\n"
                                           "🇷🇺 Привет 🥰! Я бот, который отслеживает очередь!\n"
-                                          "Для начала выбери язык, который ты хочешь использовать...\n"
-                                          "Я буду писать тебе на выбранном языке", reply_markup=language_markup)
+                                          "Для начала выбери язык, который ты хочешь использовать (по умолчанию 🇬🇧)\n"
+                                          "Я буду писать тебе на выбранном языке\n"
+                                          "Если ты видишь это сообщение не впервые, то, вероятно, я обновился! 🖥\n"
+                                          "Если ты хочешь поменять язык с 🇬🇧 на 🇷🇺, используй /lang\n\n")
 
     elif Bot.GetUserLang(message.chat.id) is True:  # eng or rus
-        Bot.UserLang(message.chat.id, False)
+        Bot.SetUserLang(message.chat.id, False)
         Send_Message(message.chat.id, "error", "Ты успешно сменил язык на 🇷🇺")
 
     else:  # rus to eng
-        Bot.UserLang(message.chat.id, True)
-        Send_Message(message.chat.id, "You successfully changed the language to 🇬🇧", "error")
-
-    while Bot.GetUserLang(message.chat.id) is None:
-        pass
+        Bot.SetUserLang(message.chat.id, True)
+        Send_Message(message.chat.id, "You have successfully changed the language to 🇬🇧", "error")
 
     buttons = [["Get in", "Get out", "Show queue", "Skip one person", "Go back", "Help"],
                ["Встать в очередь", "Выйти из очереди", "Показать очередь", "Пропустить одного человека",
                 "Уйти в конец", "Помощь - я овощ"]]
 
-    Send_Buttoned_Message(message.chat.id, "Okay, nice to meet you! 🙂", "Хорошо, приятно познакомиться! 🙂", buttons)
-    Help(message)
+    Send_Buttoned_Message(message.chat.id, "Nice to meet you! 🙂\nUse /help to see the full list of commands...",
+                          "Приятно познакомиться! 🙂\nИспользуй /help, чтобы увидеть полный список команд", buttons)
 
 
 @bot.message_handler(commands=['Help', 'help'])
 def Help(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     Send_Message(message.chat.id, "Here's a list of my commands\:\n"
                                   "/add \- stand into the end of the queue\n"
@@ -168,7 +170,8 @@ def Help(message):
 
 @bot.message_handler(commands=['Add', 'add'])
 def Add(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    # if not Bot.IfExists(message.chat.id):
+    #     Start(message)
 
     place = Bot.AddUser(message.from_user.first_name, message.from_user.username, message.chat.id)
     if place[1]:
@@ -186,14 +189,16 @@ def Add(message):
 
 @bot.message_handler(commands=['Show', 'show'])
 def Show(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     Send_Message(message.chat.id, Bot.FormList(True), Bot.FormList(False), 'MarkdownV2')
 
 
 @bot.message_handler(commands=['Remove', 'remove'])
 def Remove(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     place = Bot.RemoveUser(message.from_user.first_name, message.from_user.username)
     if place[1]:
@@ -209,7 +214,8 @@ def Remove(message):
 
 @bot.message_handler(commands=['skipAll', 'skipall', 'SkipAll'])
 def SkipAll(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     buttons = [["Skip", "Don't skip"], ["Пропустить всех", "Не пропускать"]]
     callbacks = ["skipall", "dontskip"]
@@ -220,7 +226,8 @@ def SkipAll(message):
 
 @bot.message_handler(commands=['Swap', 'swap'])
 def Swap(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     place = Bot.SwapBehind(message.from_user.first_name, message.from_user.username)
     if place[1]:
@@ -242,15 +249,16 @@ def Swap(message):
                                           f"Ой, а ты ещё не в очереди. Ты не можешь поменяться местами.\n"
                                           f"Используй /add, чтобы встать в очередь")
         else:
-            Send_Message(message.chat.id, f"Oops, you're the last in the queue <b>(your place is {place[0]})</b>. "
+            Send_Message(message.chat.id, f"Oops, you're the last in the queue <b>(your place is {place[0]})</b>.\n"
                                           f"There's nobody behind, you can't swap places",
-                                          f"Ой, а ты последний в очереди <b>(твоё место в очереди - {place[0]})</b>. "
+                                          f"Ой, а ты последний в очереди <b>(твоё место в очереди - {place[0]})</b>.\n"
                                           f"Позади никого нет, ты не можешь поменяться местами", 'html')
 
 
 @bot.message_handler(commands=['Restart', 'restart'])
 def RestartTry(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     Bot.RestartTumbler()
     if message.from_user.username != "Fedorucho":
@@ -265,7 +273,8 @@ def RestartTry(message):
 
 @bot.message_handler(commands=['Kick', 'kick'])
 def ChangeKickVar(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     if message.from_user.username != "Fedorucho":
         Bot.KickTryTumbler()
@@ -280,7 +289,8 @@ def ChangeKickVar(message):
 
 @bot.message_handler(content_types=['text'])
 def Special(message):
-    Bot.DefaultUserAdd(message.chat.id)
+    if not Bot.IfExists(message.chat.id):
+        Start(message)
 
     if Bot.restart_try:
         if message.text == str(Bot.CODE):
@@ -329,7 +339,9 @@ def Special(message):
         Bot.RealKickTumbler()
 
     else:
-        if (message.text.lower() == "get in") or (message.text.lower() == "встать в очередь"):
+        if (message.text.lower() == "start") or (message.text.lower() == "старт"):
+            Start(message)
+        elif (message.text.lower() == "get in") or (message.text.lower() == "встать в очередь"):
             Add(message)
         elif (message.text.lower() == "show queue") or (message.text.lower() == "показать очередь"):
             Show(message)
@@ -374,9 +386,9 @@ def callback_inline(call):
             if call.data == 'skipall':
                 place = Bot.TrySkip(call.message.chat.first_name, call.message.chat.username, call.message.chat.id)
                 if place[0] != 0:
-                    Send_Message(call.message.chat.id, f"You've skipped everyone and got into the end of the queue."
-                                                       f"\n<b>Now your place is {place[0]}</b>",
-                                                       f"Ты пропустил всех в очереди и встал в её конец."
+                    Send_Message(call.message.chat.id, f"You've skipped everyone and got into the end of the queue.\n"
+                                                       f"<b>Now your place is {place[0]}</b>",
+                                                       f"Ты пропустил всех в очереди и встал в её конец.\n"
                                                        f"<b>Теперь твоё место в очереди - {place[0]}</b>", 'html')
                     Bot.ShowUpdates(place[1] - 1, min(3, Bot.GetLength()))
                     if place[1] == 1:
@@ -396,12 +408,12 @@ def callback_inline(call):
 
             # choosing language
             if call.data == 'ENG':
-                Bot.UserLang(call.message.chat.id, True)
+                Bot.SetUserLang(call.message.chat.id, True)
                 bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                               reply_markup='')
 
             elif call.data == 'RUS':
-                Bot.UserLang(call.message.chat.id, False)
+                Bot.SetUserLang(call.message.chat.id, False)
                 bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                               reply_markup='')
     except:
