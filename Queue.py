@@ -353,6 +353,13 @@ def Special(message):
             SkipAll(message)
         elif (message.text.lower() == "help") or (message.text.lower() == "помощь - я овощ"):
             Help(message)
+        elif (message.text.lower() == "теорвер"):
+            Send_Message(message.chat.id, "Points:\n20 - exam\n10 - attendance\n10 - work during lessons\n"
+                                          "60 or 80 - control tasks\n20 or 0 - tests in ЦДО\n"
+                                          "additional points for olympiad tasks",
+                                          "Баллы:\n20 - экзамен\n10 - посещение\n10 - работа на паре\n"
+                                          "60 или 80 - контрольные\n20 или 0 - тесты в ЦДО\n"
+                                          "доп баллы за конкурсные задачи")
         else:
             Send_Message(message.chat.id, "Sorry, I can't understand you. Please, use suggested commands.\n"
                                           "Go /Help to see the full list of commands",
