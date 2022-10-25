@@ -15,6 +15,7 @@ kick_try = False
 real_kick = False
 
 to_kick = 0
+prohibited_symbols = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
 
 queue = []
 chat_to_language = {}
@@ -82,6 +83,16 @@ def FormUser(full_name, chat_id):
     return user
 
 
+def FormCorrectName(nickname):
+    final_correct_name = ''
+    for i in nickname:
+        if i in prohibited_symbols:
+            final_correct_name += '\\'
+        final_correct_name += i
+
+    return final_correct_name
+
+
 def FormList(english):
     if english:
         string = "Queue:\n"
@@ -127,7 +138,7 @@ def SuggestUserForKick(place):
 
 def AddUser(name, username, chat_id):
     global queue
-    full_name = name + " https://t.me/" + username
+    full_name = FormCorrectName(name) + " https://t.me/" + username
     place = CheckExistance(full_name)
     if place == 0:
         queue.append(FormUser(full_name, chat_id))
@@ -138,7 +149,7 @@ def AddUser(name, username, chat_id):
 
 def RemoveUser(name, username):
     global queue
-    full_name = name + " https://t.me/" + username
+    full_name = FormCorrectName(name) + " https://t.me/" + username
     place = CheckExistance(full_name)
     if place != 0:
         queue.pop(place - 1)

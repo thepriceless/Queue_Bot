@@ -170,9 +170,6 @@ def Help(message):
 
 @bot.message_handler(commands=['Add', 'add'])
 def Add(message):
-    # if not Bot.IfExists(message.chat.id):
-    #     Start(message)
-
     place = Bot.AddUser(message.from_user.first_name, message.from_user.username, message.chat.id)
     if place[1]:
         Send_Message(message.chat.id, f"You've been added to the queue.\n<b>Your place is {place[0]}</b>",
@@ -202,7 +199,7 @@ def Remove(message):
 
     place = Bot.RemoveUser(message.from_user.first_name, message.from_user.username)
     if place[1]:
-        Send_Message(message.chat.id, "You've been removed from the queue.\nYour history is finished.",
+        Send_Message(message.chat.id, "You've been removed from the queue.\nYour story is finished.",
                                       "Ты вышел из очереди.\nТвоя история окончена.")
         Bot.ShowUpdates(place[0] - 1, min(3, Bot.GetLength()))
         if place[0] == 1:
@@ -376,7 +373,7 @@ def callback_inline(call):
             if call.data == 'kick':
                 kicked = Bot.KickUser(Bot.to_kick)
                 Send_Message(kicked[0], "You've been kicked from the queue by the admin due to the bad behaviour.\n"
-                                        "YOUR HISTORY IS FINISHED!",
+                                        "YOUR STORY IS FINISHED!",
                                         "Админ исключил тебя из очереди за плохое поведение.\n"
                                         "ТВОЯ ИСТОРИЯ ОКОНЧЕНА!")
                 Send_Message(call.message.chat.id, f"{kicked[1]} has been kicked.", f"{kicked[1]} был исключён.")
